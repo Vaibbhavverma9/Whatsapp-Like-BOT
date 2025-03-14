@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat</title>
+    <!-- Download and include Bootstrap files locally -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+    :root {
+        --whatsapp-green: #128C7E;
+        --chat-bg: #E5DDD5;
+        --sent-msg-bg: #DCF8C6;
+        --received-msg-bg: #FFFFFF;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background-color: #dadbd3;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .chat-container {
+        max-width: 100%;
+        height: 100vh;
+        margin: 0 auto;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .chat-header {
+        background-color: var(--whatsapp-green);
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+
+    .avatar i {
+        font-size: 2rem;
+    }
+
+    .name {
+        font-weight: 500;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .header-actions .btn {
+        color: white;
+    }
+
+    .chat-messages {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: var(--chat-bg);
+        background-image: url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 16c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm33.414-6l5.95-5.95L45.95.636 40 6.586 34.05.636 32.636 2.05 38.586 8l-5.95 5.95 1.414 1.414L40 9.414l5.95 5.95 1.414-1.414L41.414 8zM40 48c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zM9.414 40l5.95-5.95-1.414-1.414L8 38.586l-5.95-5.95L.636 34.05 6.586 40l-5.95 5.95 1.414 1.414L8 41.414l5.95 5.95 1.414-1.414L9.414 40z' fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    .message {
+        max-width: 45%;
+        margin: 8px 0;
+        padding: 8px 12px;
+        border-radius: 7.5px;
+        position: relative;
+        word-wrap: break-word;
+        min-width: 80px;
+    }
+
+    .message.sent {
+        background-color: var(--sent-msg-bg);
+        margin-left: auto;
+        margin-right: 10px;
+        border-top-right-radius: 0;
+    }
+
+    .message.received {
+        background-color: var(--received-msg-bg);
+        margin-right: auto;
+        margin-left: 10px;
+        border-top-left-radius: 0;
+    }
+
+    .message .timestamp {
+        font-size: 0.75rem;
+        color: #999;
+        float: right;
+        margin-left: 10px;
+        margin-top: 5px;
+    }
+
+    .message img, .message video {
+        max-width: 100%;
+        border-radius: 5px;
+        margin-top: 5px;
+    }
+
+    .chat-input {
+        padding: 10px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .input-controls {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .chat-input input {
+        flex-grow: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 20px;
+        outline: none;
+    }
+
+    .keywords-btn, .send-btn, .story-control-btn {
+        background: none;
+        border: none;
+        color: var(--whatsapp-green);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.2s;
+    }
+
+    .story-control-btn {
+        display: none;
+    }
+
+    .story-control-btn.visible {
+        display: inline-block;
+    }
+
+    .keywords-panel {
+        display: none;
+        position: absolute;
+        bottom: 60px;
+        left: 10px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        min-width: 200px;
+        z-index: 1000;
+        padding: 8px 0;
+    }
+
+    .keywords-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .keyword-chip {
+        background: none;
+        color: #333;
+        padding: 8px 20px;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.2s;
+        border: none;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+
+    .keyword-chip:hover {
+        background-color: #f0f0f0;
+    }
+
+    /* Update the toggle animation */
+    .keywords-panel.visible {
+        display: block;
+        animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .typing-indicator {
+        padding: 12px 15px;
+        background-color: var(--received-msg-bg);
+        border-radius: 15px;
+        margin: 10px;
+        margin-right: auto;
+        display: inline-block;
+        position: relative;
+    }
+
+    .typing-indicator span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background-color: #93989c;
+        border-radius: 50%;
+        margin: 0 2px;
+        animation: typing 1.4s infinite;
+        transform-origin: center;
+    }
+
+    @keyframes typing {
+        0% { transform: translateY(0px); }
+        28% { transform: translateY(-5px); }
+        44% { transform: translateY(0px); }
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    .story-controls {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        display: none;
+        z-index: 1000;
+    }
+
+    .story-controls button {
+        background: none;
+        border: none;
+        color: var(--whatsapp-green);
+        font-size: 1.2rem;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .story-controls button:hover {
+        color: #0f7a6c;
+    }
+
+    .edit-profile-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 2000;
+    }
+
+    .edit-profile-modal input {
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .edit-profile-modal button {
+        background: var(--whatsapp-green);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+    }
+
+    .story-status {
+        display: none;
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        z-index: 1000;
+    }
+
+    .story-status.visible {
+        display: block;
+    }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="user-info" onclick="showEditProfile()">
+                <div class="avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="name" id="display-name">Chat Bot</div>
+            </div>
+            <div class="header-actions">
+                <button class="btn" onclick="toggleFullscreen()">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="btn" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="clearChat()">Clear Chat</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Stories</h6></li>
+                        <div id="stories-list"></div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <!-- Input Area -->
+        <div class="chat-input">
+            <div class="input-controls">
+                <button class="btn keywords-btn" onclick="toggleKeywords()">
+                    <i class="bi bi-slash-lg"></i>
+                </button>
+                <button class="btn story-control-btn" onclick="pauseStory()">
+                    <i class="bi bi-pause-fill"></i>
+                </button>
+                <button class="btn story-control-btn" onclick="resumeStory()">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+                <button class="btn story-control-btn" onclick="stopStory()">
+                    <i class="bi bi-stop-fill"></i>
+                </button>
+            </div>
+            <input type="text" id="message-input" placeholder="Type a message" onkeypress="handleKeyPress(event)">
+            <button class="btn send-btn" onclick="sendMessage()">
+                <i class="bi bi-send"></i>
+            </button>
+        </div>
+
+        <!-- Keywords Panel -->
+        <div class="keywords-panel" id="keywords-panel">
+            <div class="keywords-list" id="keywords-list"></div>
+        </div>
+        <div class="story-status" id="story-status">Story Paused</div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="edit-profile-modal" id="edit-profile-modal">
+        <h5>Edit Profile</h5>
+        <input type="text" id="edit-name" placeholder="Display Name">
+        <button onclick="saveProfile()">Save</button>
+        <button onclick="closeEditProfile()">Cancel</button>
+    </div>
+
+    <!-- Download and include Bootstrap JS locally -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Local data
+    const keywords_responses = {
+        "hello": [
+            "Hi there! 👋",
+            "Hello! How are you?",
+            "Hey! Nice to hear from you!"
+        ],
+        "how are you": [
+            "I'm doing great, thanks for asking!",
+            "Pretty good! How about you?",
+            "Wonderful! Thanks for asking 😊"
+          ],
+          "hi": [
+              "Hi...",
+              "Hi, Kya haal hai.",
+              "Hii...kya haal chal"
+        ],
+        "bye": [
+            "Goodbye! Take care!",
+            "See you later! 👋",
+            "Bye bye! Have a great day!"
+        ]
+    };
+
+    const stories = [
+        {
+            "title": "Sample Coffee Shop",
+            "messages": [
+                {"type": "sent", "content": "Hey, are you at the coffee shop?", "delay": 3},
+                {"type": "received", "content": "Yes, I just got here! Got us a table.", "delay": 4},
+                {"type": "sent", "content": "Great! I'll be there in 5.", "delay": 3},
+                {"type": "received", "content": "Perfect! I ordered your usual ☕", "delay": 5},
+                {"type": "received", "content": "https://picsum.photos/400/300", "delay": 4, "mediaType": "image"},
+                {"type": "sent", "content": "Awesome! Thanks! 😊", "delay": 3}
+            ]
+        },
+//================================================================================//
+//-- Story Start -->
+{
+    "title": "DEMO",
+    "messages": [
+        {"type": "sent", "content": "hi, What is this app", "delay":  3},
+        {"type": "received", "content": "Hi, This si an bot app", "delay": 4},
+        {"type": "sent", "content": "What is the use of it?", "delay": 3},
+        {"type": "received", "content": "It is a automatic Send receive BOT to explain story in chat form.", "delay": 5},
+        {"type": "sent", "content": "Do it send receive Images?", "delay": 3},
+        {"type": "received", "content": "Yes, It can send Images, GIF, videos", "delay": 5},
+        {"type": "sent", "content": "What is the process to send images", "delay": 3},
+        {"type": "received", "content": "Just add direct Image link in codes", "delay": 5},
+        {"type": "sent", "content": "ok.. ", "delay": 3},
+        {"type": "sent", "content": "Thank you", "delay":  3},
+        {"type": "received", "content": "Your welcome", "delay": 5}
+    ]
+},
+//-- Story End -->
+//================================================================================//
+//-- Story Start -->
+        {
+            "title": "Weekend Plans",
+            "messages": [
+                {"type": "sent", "content": "What are your plans for the weekend?", "delay": 3},
+                {"type": "received", "content": "Thinking of going hiking! Want to join?", "delay": 4},
+                {"type": "sent", "content": "Sounds fun! Where are you planning to go?", "delay": 3},
+                {"type": "received", "content": "https://picsum.photos/400/300", "delay": 4, "mediaType": "image"},
+                {"type": "received", "content": "This trail! Beautiful, right?", "delay": 3},
+                {"type": "sent", "content": "Wow! Count me in! 🏃‍♂️", "delay": 3}
+            ]
+        }
+    ];
+//-- Story End -->
+//================================================================================//
+    let keywordsVisible = false;
+    let currentStory = null;
+    let storyPaused = false;
+    let storyTimeouts = [];
+
+    // Initialize the chat interface
+    document.addEventListener('DOMContentLoaded', () => {
+        loadKeywords();
+        loadStories();
+        initializeKeywordsPanel();
+    });
+
+    // Initialize keywords panel with transition
+    function initializeKeywordsPanel() {
+        const panel = document.getElementById('keywords-panel');
+        panel.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    }
+
+    // Load keywords
+    function loadKeywords() {
+        const keywordsList = document.getElementById('keywords-list');
+        keywordsList.innerHTML = Object.keys(keywords_responses).map(keyword =>
+            `<div class="keyword-chip" onclick="insertKeyword('${keyword}')">${keyword}</div>`
+        ).join('');
+    }
+
+    // Load stories
+    function loadStories() {
+        const storiesList = document.getElementById('stories-list');
+        storiesList.innerHTML = stories.map((story, index) =>
+            `<li><a class="dropdown-item" href="#" onclick="playStory(${index})">${story.title}</a></li>`
+        ).join('');
+    }
+
+    // Toggle keywords panel with animation
+    function toggleKeywords() {
+        const panel = document.getElementById('keywords-panel');
+        const keywordsBtn = document.querySelector('.keywords-btn i');
+        keywordsVisible = !keywordsVisible;
+
+        if (keywordsVisible) {
+            panel.style.display = 'block';
+            keywordsBtn.classList.remove('bi-slash-lg');
+            keywordsBtn.classList.add('bi-x-lg');
+            setTimeout(() => panel.classList.add('visible'), 10);
+        } else {
+            panel.classList.remove('visible');
+            keywordsBtn.classList.remove('bi-x-lg');
+            keywordsBtn.classList.add('bi-slash-lg');
+            setTimeout(() => {
+                panel.style.display = 'none';
+            }, 300);
+        }
+    }
+
+    // Story control functions
+    function pauseStory() {
+        storyPaused = true;
+        storyTimeouts.forEach(clearTimeout);
+        document.getElementById('story-status').classList.add('visible');
+    }
+
+    function resumeStory() {
+        if (!currentStory || !storyPaused) return;
+        storyPaused = false;
+        document.getElementById('story-status').classList.remove('visible');
+        playStoryFromCurrentPoint();
+    }
+
+    function stopStory() {
+        storyPaused = false;
+        storyTimeouts.forEach(clearTimeout);
+        currentStory = null;
+        showStoryControls(false);
+        document.getElementById('story-status').classList.remove('visible');
+    }
+
+    // Play story messages
+    function playStory(storyId) {
+        stopStory(); // Clear any running story
+        currentStory = stories[storyId];
+        showStoryControls(true);
+        clearChat();
+        playStoryFromCurrentPoint();
+    }
+
+    function showStoryControls(show) {
+        const controls = document.querySelectorAll('.story-control-btn');
+        controls.forEach(control => {
+            if (show) {
+                control.classList.add('visible');
+            } else {
+                control.classList.remove('visible');
+            }
+        });
+    }
+    // Continue story from current point
+    function playStoryFromCurrentPoint() {
+        if (!currentStory || storyPaused) return;
+
+        storyTimeouts = [];
+        let totalDelay = 0;
+
+        currentStory.messages.forEach(message => {
+            totalDelay += message.delay * 1000;
+            const timeout = setTimeout(() => {
+                if (!storyPaused) {
+                    showTypingIndicator();
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addMessage(message.content, message.type, message.mediaType);
+                    }, 1000);
+                }
+            }, totalDelay);
+            storyTimeouts.push(timeout);
+        });
+    }
+
+    // Profile editing functions
+    function showEditProfile() {
+        const modal = document.getElementById('edit-profile-modal');
+        const currentName = document.getElementById('display-name').textContent;
+        document.getElementById('edit-name').value = currentName;
+        modal.style.display = 'block';
+    }
+
+    function closeEditProfile() {
+        document.getElementById('edit-profile-modal').style.display = 'none';
+    }
+
+    function saveProfile() {
+        const newName = document.getElementById('edit-name').value.trim();
+        if (newName) {
+            document.getElementById('display-name').textContent = newName;
+        }
+        closeEditProfile();
+    }
+
+    // Insert keyword into input
+    function insertKeyword(keyword) {
+        document.getElementById('message-input').value = keyword;
+        toggleKeywords();
+    }
+
+    // Handle message sending
+    function sendMessage() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+
+        if (message) {
+            addMessage(message, 'sent');
+            input.value = '';
+
+            showTypingIndicator();
+
+            // Get response for the keyword
+            setTimeout(() => {
+                hideTypingIndicator();
+                const responses = keywords_responses[message.toLowerCase()];
+                if (responses) {
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(response, 'received');
+                }
+            }, Math.random() * 1000 + 2000); // Random delay between 2-3 seconds
+        }
+    }
+
+    // Handle Enter key press
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    // Add message to chat
+    function addMessage(content, type, mediaType = null) {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+
+        if (mediaType === 'image') {
+            messageDiv.innerHTML = `
+                <img src="${content}" alt="Shared image">
+                <span class="timestamp">${getCurrentTime()}</span>
+            `;
+        } else if (mediaType === 'video') {
+            messageDiv.innerHTML = `
+                <video controls>
+                    <source src="${content}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <span class="timestamp">${getCurrentTime()}</span>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                ${content}
+                <span class="timestamp">${getCurrentTime()}</span>
+            `;
+        }
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Get current time for message timestamp
+    function getCurrentTime() {
+        const now = new Date();
+        return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const indicator = document.createElement('div');
+        indicator.id = 'typing-indicator';
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = '<span></span><span></span><span></span>';
+        messagesContainer.appendChild(indicator);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Hide typing indicator
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    // Clear chat messages
+    function clearChat() {
+        const messagesContainer = document.getElementById('chat-messages');
+        messagesContainer.innerHTML = '';
+    }
+
+    // Toggle fullscreen
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+    </script>
+</body>
+</html>

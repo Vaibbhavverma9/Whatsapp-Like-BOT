@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Script Generator</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
+            margin: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        input, select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .content {
+            flex-grow: 1;
+            height: 50px;
+        }
+        .delay {
+            width: 50px;
+        }
+        .output {
+            background: #eef2f7;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .remove-btn {
+            background: #dc3545;
+        }
+        .remove-btn:hover {
+            background: #b22222;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align: center; color: #333;">Chat Script Generator</h2>
+        <label>Title:
+            <input type="text" id="title" placeholder="Enter chat title" style="width: 100%; margin-bottom: 10px;">
+        </label>
+        <button onclick="copyToClipboard()">Copy Code</button>
+        <div id="chatContainer"></div>
+        <button onclick="addRow()">+ Add Message</button>
+        <h3>Generated Code:</h3>
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        let messages = [];
+
+        function addRow() {
+            let row = `<div class='row'>
+                <select class='type'>
+                    <option value='sent'>Sent</option>
+                    <option value='received'>Received</option>
+                </select>
+                <input type='text' class='content' placeholder='Enter message or image URL'>
+                <input type='number' class='delay' placeholder='Delay (sec)' min='1' value='5'>
+                <button class='remove-btn' onclick='removeRow(this)'>❌</button>
+            </div>`;
+            $("#chatContainer").append(row);
+        }
+
+        function removeRow(button) {
+            $(button).parent().remove();
+            generateJSON();
+        }
+
+        $(document).on('input', 'input, select', function() {
+            generateJSON();
+        });
+
+        function generateJSON() {
+            messages = [];
+            $(".row").each(function() {
+                let type = $(this).find(".type").val();
+                let content = $(this).find(".content").val();
+                let delay = $(this).find(".delay").val() || 5; // Default to 5 sec
+                let message = { type, content, delay: parseInt(delay) };
+                if (content.startsWith("http")) message.mediaType = "image";
+                messages.push(message);
+            });
+            let chatScript = `//================================================================================//\n//-- Story Start -->\n        {\n            \"title\": \"${$("#title").val()}\",\n            \"messages\": [\n                ${messages.map(m => JSON.stringify(m)).join(",\n                ")}\n            ]\n        },\n//-- Story End -->\n//================================================================================//`;
+            $("#output").text(chatScript);
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText($("#output").text()).then(() => {
+                alert("Code copied to clipboard!");
+            });
+        }
+    </script>
+</body>
+</html>
