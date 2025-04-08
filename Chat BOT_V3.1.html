@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Clone</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --chat-bg: #e5ddd5;
+            --header-bg: #075e54;
+            --sent-bg: #dcf8c6;
+            --received-bg: #ffffff;
+            --bubble-radius: 7px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--chat-bg);
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container-fluid {
+            max-width: 100%;
+            height: 100%;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .profile-name {
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .header-actions a {
+            color: Black;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVkZGQ1Ii8+PGcgZmlsbD0icmdiYSgyMjAsIDIyMCwgMjIwLCAwLjUpIj48Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIxMiIvPjxjaXJjbGUgY3g9Ijc1IiBjeT0iMjUiIHI9IjEyIi8+PGNpcmNsZSBjeD0iMTI1IiBjeT0iMjUiIHI9IjEyIi8+PGNpcmNsZSBjeD0iMTc1IiBjeT0iMjUiIHI9IjEyIi8+PGNpcmNsZSBjeD0iMjUiIGN5PSI3NSIgcj0iMTIiLz48Y2lyY2xlIGN4PSI3NSIgY3k9Ijc1IiByPSIxMiIvPjxjaXJjbGUgY3g9IjEyNSIgY3k9Ijc1IiByPSIxMiIvPjxjaXJjbGUgY3g9IjE3NSIgY3k9Ijc1IiByPSIxMiIvPjxjaXJjbGUgY3g9IjI1IiBjeT0iMTI1IiByPSIxMiIvPjxjaXJjbGUgY3g9Ijc1IiBjeT0iMTI1IiByPSIxMiIvPjxjaXJjbGUgY3g9IjEyNSIgY3k9IjEyNSIgcj0iMTIiLz48Y2lyY2xlIGN4PSIxNzUiIGN5PSIxMjUiIHI9IjEyIi8+PGNpcmNsZSBjeD0iMjUiIGN5PSIxNzUiIHI9IjEyIi8+PGNpcmNsZSBjeD0iNzUiIGN5PSIxNzUiIHI9IjEyIi8+PGNpcmNsZSBjeD0iMTI1IiBjeT0iMTc1IiByPSIxMiIvPjxjaXJjbGUgY3g9IjE3NSIgY3k9IjE3NSIgcj0iMTIiLz48L2c+PC9zdmc+');
+            background-repeat: repeat;
+        }
+
+        .message {
+            max-width: 75%;
+            margin-bottom: 10px;
+            position: relative;
+            clear: both;
+        }
+
+        .message.sent {
+            float: right;
+        }
+
+        .message.received {
+            float: left;
+        }
+
+        .message-content {
+            padding: 8px 12px;
+            border-radius: var(--bubble-radius);
+            word-wrap: break-word;
+        }
+
+        .message.sent .message-content {
+            background-color: var(--sent-bg);
+            border-radius: var(--bubble-radius) 0 var(--bubble-radius) var(--bubble-radius);
+        }
+
+        .message.received .message-content {
+            background-color: var(--received-bg);
+            border-radius: 0 var(--bubble-radius) var(--bubble-radius) var(--bubble-radius);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #888;
+            text-align: right;
+            margin-top: 2px;
+            padding: 0 4px;
+        }
+
+        .chat-input {
+            background-color: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            outline: none;
+        }
+
+        .send-btn {
+            margin-left: 10px;
+            background-color: var(--header-bg);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            background-color: var(--received-bg);
+            border-radius: 0 var(--bubble-radius) var(--bubble-radius) var(--bubble-radius);
+            padding: 8px 12px;
+            display: inline-block;
+            max-width: 100px;
+            margin-bottom: 10px;
+            clear: both;
+            float: left;
+        }
+
+        .typing-indicator img {
+            height: 20px;
+            width: auto;
+        }
+
+        /* Media content */
+        .media-content {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        /* Clickable links */
+        .message-link {
+            color: #3498db;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .message-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Profile modal */
+        .profile-modal-content {
+            padding: 20px;
+        }
+
+        .profile-modal-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* Fullscreen mode */
+        .container-fluid.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+        }
+
+        /* Playback controls - new styles */
+        .play-pause-btn {
+            margin-right: 10px;
+            background-color: var(--header-bg);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            padding: 0 12px;
+            position: relative;
+        }
+
+        /* Pause text styling - NEW */
+        .pause-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 8px;
+            white-space: nowrap;
+            display: none; /* Hidden by default, will be shown via JS when paused */
+        }
+
+        .speed-control {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .speed-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #FF9800;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mobile responsive design */
+        @media (max-width: 768px) {
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="profile-info">
+                <img src="data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='7' r='5'></circle><path d='M17 14h.352a3 3 0 0 1 2.976 2.628l.391 3.124A2 2 0 0 1 18.734 22H5.266a2 2 0 0 1-1.985-2.248l.39-3.124A3 3 0 0 1 6.649 14H7'></path></svg>"
+                     id="profile-pic" class="profile-pic">
+                <span id="profile-name" class="profile-name">Hi...</span>
+            </div>
+            <div class="header-actions">
+                <!-- Speed control button - NEW -->
+                <a href="#" id="speed-btn" class="speed-control">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span id="speed-indicator" class="speed-indicator" style="display: none;">1s</span>
+                </a>
+                <a href="#" id="keywords-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg></a>
+                <a href="#" id="fullscreen-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg></a>
+                <div class="dropdown d-inline-block">
+                    <a href="#" id="menu-btn" data-bs-toggle="dropdown"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></a>
+                    <ul class="dropdown-menu dropdown-menu-end" id="header-menu">
+                        <li><h6 class="dropdown-header">Stories</h6></li>
+                        <div id="story-menu-items">
+                            <!-- Story items will be added here -->
+                        </div>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="clear-chat">Clear Chat</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chat-area">
+            <!-- Messages will appear here -->
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input">
+            <!-- Play/Pause button with Paused text - NEW -->
+            <button class="play-pause-btn" id="play-pause-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-icon">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-icon" style="display: none;">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+                <span class="pause-text">Paused</span>
+            </button>
+            <input type="text" id="message-input" placeholder="Type a message">
+            <button class="send-btn" id="send-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body profile-modal-content">
+                    <img id="modal-profile-pic" class="profile-modal-pic" src="data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='7' r='5'></circle><path d='M17 14h.352a3 3 0 0 1 2.976 2.628l.391 3.124A2 2 0 0 1 18.734 22H5.266a2 2 0 0 1-1.985-2.248l.39-3.124A3 3 0 0 1 6.649 14H7'></path></svg>">
+                    <div class="mb-3">
+                        <label for="profile-name-input" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="profile-name-input" value="WhatsApp Clone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile-pic-url" class="form-label">Profile Picture URL</label>
+                        <input type="text" class="form-control" id="profile-pic-url" placeholder="Enter image URL">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-profile">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keywords Modal -->
+    <div class="modal fade" id="keywordsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Available Keywords</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group" id="keywords-list">
+                        <!-- Keywords will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <!-- App JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const profilePic = document.getElementById('profile-pic');
+            const profileName = document.getElementById('profile-name');
+            const chatArea = document.getElementById('chat-area');
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const keywordsBtn = document.getElementById('keywords-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const clearChatBtn = document.getElementById('clear-chat');
+            const storyMenuItems = document.getElementById('story-menu-items');
+            const headerMenu = document.getElementById('header-menu');
+
+            // New playback control elements
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playIcon = playPauseBtn.querySelector('.play-icon');
+            const pauseIcon = playPauseBtn.querySelector('.pause-icon');
+            const speedBtn = document.getElementById('speed-btn');
+            const speedIndicator = document.getElementById('speed-indicator');
+
+            // Bootstrap Modals
+            const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+            const keywordsModal = new bootstrap.Modal(document.getElementById('keywordsModal'));
+
+            // Save profile button
+            const saveProfileBtn = document.getElementById('save-profile');
+
+            // App Data
+            let keywordsData = [];
+
+            // Load keywords from CSV
+            function loadKeywords() {
+                // STANDALONE OFFLINE VERSION: Direct content instead of fetch
+                const keywordsCSV = `keywords,display_name,responses
+hello hi hey,Greeting,"Hi there! How can I help you today?,Hello! Nice to chat with you!,Hey there! What's up?"
+
+help assistance guide,Help Menu,"I can help you with: 1) Stories 2) Media sharing 3) Settings,Need assistance? Try typing a keyword like 'joke' or 'weather',Commands: /stories - show stories, /clear - clear chat"
+
+weather forecast temperature,Weather Info,"Today's forecast: Sunny with a high of 75°F,It looks like clear skies today with temperatures around 22°C,Weather alert: Expect light rain this afternoon"
+
+joke funny,Random Joke,"Why don't scientists trust atoms? Because they make up everything!,What's the best thing about Switzerland? I don't know, but the flag is a big plus.,I told my wife she was drawing her eyebrows too high. She looked surprised."
+
+image picture photo,Show Image,"https://picsum.photos/400/300,https://source.unsplash.com/random/400x300,https://placeimg.com/400/300/nature"
+
+video clip movie,Show Video,"https://www.w3schools.com/html/mov_bbb.mp4,https://filesamples.com/samples/video/mp4/sample_640x360.mp4,https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"`;
+
+                // Parse the CSV string directly
+                Papa.parse(keywordsCSV, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        keywordsData = results.data;
+                        console.log('Keywords loaded:', keywordsData);
+                        // Update the keywords list after loading
+                        populateKeywordsList();
+                    },
+                    error: function(error) {
+                        console.error('Error loading keywords:', error);
+                    }
+                });
+            }
+
+            // Predefined stories for the app
+            const storiesData = [
+              {
+                  file: 'story1',
+                  title: 'Introduction',
+                  content: `type,content,time_interval
+receive,"Hi there! Welcome to our chat app.",100
+receive,"This is a demonstration of the auto-story feature.",3000
+send,"Hello! This looks interesting.",1500
+receive,"I'm glad you like it! You can create your own stories by adding CSV files.",3000
+receive,"Stories are a great way to showcase features or provide guided tours.",2500
+send,"How do I create my own story?",1500
+receive,"Create a CSV file with columns: type, content, time_interval",3000
+receive,"The 'type' can be 'send' or 'receive'",2000
+receive,"'content' is the message text",2000
+receive,"'time_interval' is the delay in milliseconds",2000
+send,"That sounds easy enough!",1500
+receive,"Yes! Now you can make interactive demos and tutorials.",2500`
+              },
+//==============================================================================
+              {
+                  file: 'story2',
+                  title: 'Help',
+                  content: `type,content,time_interval
+receive,"Welcome to Chat app HOw can I help you?",300
+send,"What is this app?",1500
+receive,"This is an BOT app to simulate a real chats",2500
+receive,"1. It can send Text message",3000
+receive,"2. It can send Media files (image,gif,video)",3500
+receive,"3. It gave you a secret friend",3000
+send,"How to start?",1500
+receive,"Click on 3 dots at top right and select your story",2500
+receive,"Enjoy the app, Good luck!",4000`
+              }
+            ];
+//===========END OF STORIES===============
+
+            // Playback control variables - NEW
+            let isPlaying = false;
+            let isFastSpeed = false;
+            let normalSpeed = 2000; // 2 seconds (default)
+            let fastSpeed = 1000;   // 1 second
+            let currentSpeed = normalSpeed;
+            let playbackInterval = null;
+
+            // Story playing variables
+            let currentStory = null;
+            let currentStoryKey = null;
+            let currentMessageIndex = 0;
+            let typingInterval = null;
+
+            // Load keywords from CSV and populate the menu
+            loadKeywords();
+
+            // Call populateStoryMenu to initialize the menu with our sample stories
+            populateStoryMenu();
+
+            // Populate the story menu
+            function populateStoryMenu() {
+                storyMenuItems.innerHTML = '';
+
+                storiesData.forEach((story, index) => {
+                    const item = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.classList.add('dropdown-item');
+                    link.href = '#';
+                    link.textContent = story.title;
+                    link.dataset.storyKey = index;
+
+                    link.addEventListener('click', function() {
+                        startStory(index);
+                    });
+
+                    item.appendChild(link);
+                    storyMenuItems.appendChild(item);
+                });
+            }
+
+            // Populate the keywords list
+            function populateKeywordsList() {
+                const keywordsList = document.getElementById('keywords-list');
+                keywordsList.innerHTML = '';
+
+                keywordsData.forEach(item => {
+                    const listItem = document.createElement('a');
+                    listItem.className = 'list-group-item list-group-item-action';
+                    listItem.href = '#';
+
+                    // Get the first keyword as an example and first response
+                    const firstKeyword = item.keywords.split(' ')[0];
+                    const firstResponse = item.responses.split(',')[0].trim();
+
+                    // Show the display name if available, otherwise use the first keyword
+                    const displayName = item.display_name || firstKeyword;
+
+                    listItem.innerHTML = `<strong>${displayName}</strong>: ${firstResponse}`;
+
+                    listItem.addEventListener('click', function() {
+                        keywordsModal.hide();
+                        messageInput.value = firstKeyword;
+                        messageInput.focus();
+                    });
+
+                    keywordsList.appendChild(listItem);
+                });
+            }
+
+            // Display a message in the chat area
+            function displayMessage(message, isUser = false) {
+                // Check if there's already a typing indicator and remove it
+                const typingIndicator = document.querySelector('.typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${isUser ? 'sent' : 'received'}`;
+
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+
+                // Check if the message contains media content or URLs
+                if (message.startsWith('http')) {
+                    // Image types
+                    if (message.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+                        const img = document.createElement('img');
+                        img.src = message;
+                        img.className = 'media-content';
+                        messageContent.appendChild(img);
+                    }
+                    // Video types
+                    else if (message.match(/\.(mp4|webm|ogg)$/i)) {
+                        const video = document.createElement('video');
+                        video.src = message;
+                        video.className = 'media-content';
+                        video.controls = true;
+                        video.preload = 'metadata';
+                        messageContent.appendChild(video);
+                    }
+                    // Audio types
+                    else if (message.match(/\.(mp3|wav|ogg|aac)$/i)) {
+                        const audio = document.createElement('audio');
+                        audio.src = message;
+                        audio.className = 'media-content';
+                        audio.controls = true;
+                        messageContent.appendChild(audio);
+                    }
+                    // Regular URL - make it clickable
+                    else {
+                        const link = document.createElement('a');
+                        link.href = message;
+                        link.target = '_blank';
+                        link.textContent = message;
+                        link.className = 'message-link';
+                        messageContent.appendChild(link);
+                    }
+                } else {
+                    // Process regular text with URL detection
+                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                    if (urlRegex.test(message)) {
+                        // If message contains URLs, split and create elements accordingly
+                        const parts = message.split(urlRegex);
+                        const matches = message.match(urlRegex) || [];
+
+                        for (let i = 0; i < parts.length; i++) {
+                            if (parts[i]) {
+                                const textNode = document.createTextNode(parts[i]);
+                                messageContent.appendChild(textNode);
+                            }
+
+                            if (matches[i]) {
+                                const link = document.createElement('a');
+                                link.href = matches[i];
+                                link.target = '_blank';
+                                link.textContent = matches[i];
+                                link.className = 'message-link';
+                                messageContent.appendChild(link);
+                            }
+                        }
+                    } else {
+                        // Regular text without URLs
+                        messageContent.textContent = message;
+                    }
+                }
+
+                const messageTime = document.createElement('div');
+                messageTime.className = 'message-time';
+
+                const now = new Date();
+                messageTime.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                messageElement.appendChild(messageContent);
+                messageElement.appendChild(messageTime);
+
+                chatArea.appendChild(messageElement);
+
+                // Scroll to the bottom
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            // Show typing indicator
+            function showTypingIndicator() {
+                const indicatorElement = document.createElement('div');
+                indicatorElement.className = 'typing-indicator';
+
+                // Use an animated GIF for the typing indicator
+                indicatorElement.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="0 0 120 30" fill="#075e54">
+                        <circle cx="15" cy="15" r="5">
+                            <animate attributeName="r" from="3" to="5" begin="0s" dur="0.8s" values="3;5;3" calcMode="linear" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="40" cy="15" r="4">
+                            <animate attributeName="r" from="3" to="5" begin="0.3s" dur="0.8s" values="3;5;3" calcMode="linear" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="65" cy="15" r="3">
+                            <animate attributeName="r" from="3" to="5" begin="0.6s" dur="0.8s" values="3;5;3" calcMode="linear" repeatCount="indefinite" />
+                        </circle>
+                    </svg>
+                `;
+
+                chatArea.appendChild(indicatorElement);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            // Remove typing indicator
+            function removeTypingIndicator() {
+                const typingIndicator = document.querySelector('.typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            // Check if a message matches any keywords
+            function getResponseForKeyword(message) {
+                const userInput = message.trim().toLowerCase();
+
+                // Find a matching keyword - check multiple variations in the keywords column
+                const matchingKeyword = keywordsData.find(item => {
+                    const keywords = item.keywords.toLowerCase().split(' ');
+                    return keywords.some(keyword => userInput.includes(keyword));
+                });
+
+                if (matchingKeyword) {
+                    // If responses is a comma-separated list, return a random one
+                    const responses = matchingKeyword.responses.split(',');
+                    return responses[Math.floor(Math.random() * responses.length)].trim();
+                }
+
+                return null;
+            }
+
+            // Start playing a story
+            function startStory(storyKey) {
+                // Clear any existing messages
+                chatArea.innerHTML = '';
+
+                // Reset story state
+                currentStoryKey = storyKey;
+                currentStory = storiesData[storyKey];
+                currentMessageIndex = 0;
+
+                // Process CSV format for all stories
+                if (currentStory.content) {
+                    // Create a more robust parser for the CSV content
+                    const lines = currentStory.content.trim().split('\n');
+                    // Skip the header row
+                    const messageLines = lines.slice(1);
+
+                    const messages = [];
+
+                    // Combine lines that might be split across multiple rows due to newlines in quoted fields
+                    let currentLine = '';
+                    let inQuote = false;
+
+                    for (let i = 0; i < messageLines.length; i++) {
+                        const line = messageLines[i];
+
+                        // Count quotes to determine if we're inside a quoted field
+                        const quoteCount = (line.match(/"/g) || []).length;
+
+                        if (!inQuote) {
+                            // Starting a new message
+                            currentLine = line;
+
+                            // If odd number of quotes, we're entering a quoted field that spans lines
+                            if (quoteCount % 2 !== 0) {
+                                inQuote = true;
+                                continue;
+                            }
+                        } else {
+                            // We're inside a quoted field, append this line
+                            currentLine += '\\n' + line;
+
+                            // If odd number of quotes, we're exiting the quoted field
+                            if (quoteCount % 2 !== 0) {
+                                inQuote = false;
+                            } else {
+                                // Still in the quoted field, continue to next line
+                                continue;
+                            }
+                        }
+
+                        // Process the complete message line
+                        if (!inQuote) {
+                            // Use a simpler approach - split by the first and last comma
+                            const firstComma = currentLine.indexOf(',');
+                            const lastComma = currentLine.lastIndexOf(',');
+
+                            if (firstComma !== -1 && lastComma !== -1 && firstComma !== lastComma) {
+                                const type = currentLine.substring(0, firstComma);
+                                // Extract content between quotes
+                                let content = currentLine.substring(firstComma + 1, lastComma).trim();
+                                if (content.startsWith('"') && content.endsWith('"')) {
+                                    content = content.substring(1, content.length - 1);
+                                }
+
+                                // Replace any escaped newlines with actual newlines
+                                content = content.replace(/\\n/g, '\n');
+
+                                const delay = parseInt(currentLine.substring(lastComma + 1));
+
+                                if ((type === 'send' || type === 'receive') && !isNaN(delay)) {
+                                    messages.push({
+                                        sender: type === 'send' ? 'user' : 'bot',
+                                        text: content,
+                                        delay: delay
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    // Replace the content with processed messages
+                    currentStory.messages = messages;
+                }
+
+                // Start playback
+                startPlayback();
+            }
+
+            // Start playback of current story - Set to play automatically
+            function startPlayback() {
+                // Start playing automatically when story is selected
+                isPlaying = true;
+                updatePlayPauseButton();
+
+                // Clear any existing intervals
+                clearInterval(playbackInterval);
+                clearTimeout(typingInterval);
+
+                // Start playing messages immediately
+                playNextMessage();
+            }
+
+            // Play the next message in the current story - UPDATED for sample story format
+            function playNextMessage() {
+                if (!isPlaying || !currentStory || currentMessageIndex >= currentStory.messages.length) {
+                    return;
+                }
+
+                const message = currentStory.messages[currentMessageIndex];
+                const delay = message.delay || currentSpeed;
+
+                // Show typing indicator for bot messages
+                if (message.sender === 'bot') {
+                    showTypingIndicator();
+                }
+
+                // Display the message after a delay
+                typingInterval = setTimeout(() => {
+                    // Display the message based on sender
+                    displayMessage(message.text, message.sender === 'user');
+
+                    currentMessageIndex++;
+
+                    // If there are more messages, set up the next one
+                    if (currentMessageIndex < currentStory.messages.length) {
+                        playbackInterval = setTimeout(playNextMessage, currentSpeed);
+                    }
+                }, delay);
+            }
+
+            // Toggle play/pause state - NEW
+            function togglePlayPause() {
+                if (isPlaying) {
+                    // Pause playback
+                    isPlaying = false;
+                    clearTimeout(typingInterval);
+                    clearInterval(playbackInterval);
+                    removeTypingIndicator();
+                } else {
+                    // Resume playback if there's a story in progress
+                    if (currentStory) {
+                        isPlaying = true;
+                        playNextMessage();
+                    }
+                }
+
+                updatePlayPauseButton();
+            }
+
+            // Update play/pause button UI - NEW
+            function updatePlayPauseButton() {
+                const pauseText = playPauseBtn.querySelector('.pause-text');
+
+                if (isPlaying) {
+                    playIcon.style.display = 'none';
+                    pauseIcon.style.display = 'block';
+                    pauseText.style.display = 'none'; // Hide "Paused" text when playing
+                } else {
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    pauseText.style.display = 'inline-block'; // Show "Paused" text when paused
+                }
+            }
+
+            // Toggle playback speed - NEW
+            function toggleSpeed() {
+                isFastSpeed = !isFastSpeed;
+                currentSpeed = isFastSpeed ? fastSpeed : normalSpeed;
+
+                // Update the speed indicator UI
+                if (isFastSpeed) {
+                    speedIndicator.style.display = 'flex';
+                } else {
+                    speedIndicator.style.display = 'none';
+                }
+            }
+
+            // Handle send button click
+            function handleSendMessage() {
+                const message = messageInput.value.trim();
+
+                if (message !== '') {
+                    // Display the user's message
+                    displayMessage(message, true);
+
+                    // Check if the message matches any keywords
+                    const response = getResponseForKeyword(message);
+
+                    if (response) {
+                        // Show typing indicator
+                        showTypingIndicator();
+
+                        // Display the response after a delay
+                        setTimeout(() => {
+                            displayMessage(response, false);
+                        }, 1000);
+                    }
+
+                    // Clear the input field
+                    messageInput.value = '';
+                }
+            }
+
+            // Event Listeners
+            // Play/Pause button click - NEW
+            playPauseBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                togglePlayPause();
+            });
+
+            // Speed control button click - NEW
+            speedBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleSpeed();
+            });
+
+            // Send button click
+            sendBtn.addEventListener('click', handleSendMessage);
+
+            // Enter key in input field
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSendMessage();
+                }
+            });
+
+            // Keywords button click
+            keywordsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                keywordsModal.show();
+            });
+
+            // Clear chat button click
+            clearChatBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                chatArea.innerHTML = '';
+
+                // Also stop any ongoing story
+                clearTimeout(typingInterval);
+                clearInterval(playbackInterval);
+                currentStory = null;
+                currentMessageIndex = 0;
+                isPlaying = false;
+                updatePlayPauseButton();
+            });
+
+            // Fullscreen button click
+            fullscreenBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector('.container-fluid').classList.toggle('fullscreen');
+            });
+
+            // Profile picture and name click
+            profilePic.addEventListener('click', function() {
+                profileModal.show();
+            });
+
+            profileName.addEventListener('click', function() {
+                profileModal.show();
+            });
+
+            // Save profile button click
+            saveProfileBtn.addEventListener('click', function() {
+                const name = document.getElementById('profile-name-input').value;
+                const picUrl = document.getElementById('profile-pic-url').value;
+
+                profileName.textContent = name;
+
+                if (picUrl) {
+                    profilePic.src = picUrl;
+                    document.getElementById('modal-profile-pic').src = picUrl;
+                }
+
+                profileModal.hide();
+            });
+
+            // Initialize with default profile name
+            if (profileName.textContent === 'Hi...') {
+                profileName.textContent = 'WhatsApp Clone';
+            }
+        });
+    </script>
+</body>
+</html>
